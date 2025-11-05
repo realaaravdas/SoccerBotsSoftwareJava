@@ -8,6 +8,7 @@ import { TerminalMonitor } from "./components/TerminalMonitor";
 import { Activity } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import { apiService, Robot, Controller, LogEntry } from "./services/api";
+import { gamepadService } from "./services/gamepad";
 
 export default function App() {
   const [robots, setRobots] = useState<Robot[]>([]);
@@ -43,6 +44,10 @@ export default function App() {
   useEffect(() => {
     console.log("[App] Initializing API connection...");
     apiService.connectWebSocket();
+
+    // Start gamepad polling
+    gamepadService.start();
+    console.log("[App] Gamepad service started");
 
     // Subscribe to logs
     const unsubscribe = apiService.subscribeToLogs((newLogs) => {

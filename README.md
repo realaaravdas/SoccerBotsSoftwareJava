@@ -1,28 +1,27 @@
 # SoccerBots Control Station
 
-A modern robot control system for ESP32-based soccer robots with a sleek Electron-based React UI and Python backend.
+A modern robot control system for ESP32-based soccer robots with a sleek Electron-based React UI and Node.js backend.
 
-![System Architecture](https://img.shields.io/badge/Platform-ESP32%20%2B%20React%20%2B%20Python-blue)
+![System Architecture](https://img.shields.io/badge/Platform-ESP32%20%2B%20React%20%2B%20Node.js-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Version](https://img.shields.io/badge/Version-2.0.0-orange)
 
 ## 🚀 Overview
 
 This project provides a complete robot control solution with:
-- **Native Desktop App** - Modern React UI powered by Electron + Python backend
-- **Python Backend** - Lightweight, cross-platform REST API + WebSocket server
-- **PlayStation Controller Support** - Full PS4/PS5 controller support via pygame
+- **Native Desktop App** - Modern React UI powered by Electron with integrated Node.js backend
+- **Node.js Backend** - Lightweight, high-performance REST API + WebSocket server running in-process
+- **Browser Gamepad Support** - Full PS4/PS5/Xbox controller support via HTML5 Gamepad API
 - **Headless API Mode** - Run backend standalone for custom frontends
+- **Zero Python Dependencies** - Pure JavaScript/TypeScript stack for easier deployment
 
 ## 📋 Requirements
 
 ### All Modes
-- **Python**: 3.8 or later
-- **pip**: Python package manager
-- **Controllers**: USB game controllers (PlayStation, Xbox, etc.) via pygame
+- **Node.js**: 18+ and npm
+- **Controllers**: USB game controllers (PlayStation, Xbox, etc.) via browser Gamepad API
 
 ### Native Desktop App (Electron + React)
-- **Node.js**: 18+ and npm
 - **OS**: Windows 10/11, macOS 10.14+, or Linux
 
 ### ESP32 Robots
@@ -94,7 +93,7 @@ npm run dev
 If NPM run dev doesn't work and complains about 'concurrently', then run "npm install -g concurrently", and retry.
 
 This automatically:
-- ✅ Starts Python backend (port 8080)
+- ✅ Starts Node.js backend (port 8080)
 - ✅ Starts React dev server (port 5173)
 - ✅ Opens native Electron window
 - ✅ Hot reloads on code changes
@@ -110,9 +109,9 @@ npm run dist
 
 **Manual Development** (if you need separate terminals):
 ```bash
-# Terminal 1: Python backend with API
+# Terminal 1: Node.js backend with API
 npm run dev:backend
-# Or directly: cd python_backend && python3 main.py
+# Or directly: cd nodejs_backend && npm start
 
 # Terminal 2: React frontend (Vite dev server)
 npm run dev:frontend
@@ -133,11 +132,11 @@ Run backend with HTTP REST API + WebSocket for custom frontends.
 
 ```bash
 # Run headless (API on port 8080)
-cd python_backend
-python3 main.py
+cd nodejs_backend
+npm start
 
 # Or specify custom port
-python3 main.py 9090
+node src/main.js 9090
 ```
 
 ## 🎨 Native Desktop App Features
@@ -149,11 +148,12 @@ python3 main.py 9090
 - **Terminal Monitor** - Live command output and system logs
 - **Service Log** - Event tracking with timestamps and severity levels
 
-### Python Backend API
+### Node.js Backend API
 - **REST API** - Full robot/controller/network management
-- **WebSocket** - Real-time updates and event streaming
+- **WebSocket** - Real-time updates and event streaming via Socket.IO
 - **Auto-Discovery** - Finds robots on network via UDP broadcast
-- **Controller Support** - Automatic USB controller detection via pygame
+- **Controller Support** - Browser Gamepad API integration (no native dependencies)
+- **In-Process** - Runs directly in Electron main process (no subprocess)
 - **Cross-Platform** - Works on Windows, macOS, and Linux
 
 ### Real-Time Features
@@ -167,15 +167,17 @@ python3 main.py 9090
 
 ```
 SoccerBotsSoftwareJava/
-├── python_backend/                   # Python backend (NEW!)
-│   ├── main.py                       # Entry point
-│   ├── api_server.py                 # Flask REST API + WebSocket
-│   ├── network_manager.py            # UDP networking
-│   ├── robot_manager.py              # Robot discovery & control
-│   ├── robot.py                      # Robot data models
-│   ├── controller_manager.py         # Controller support
-│   ├── controller_input.py           # Input handling
-│   └── requirements.txt              # Python dependencies
+├── nodejs_backend/                   # Node.js backend (CURRENT!)
+│   ├── src/
+│   │   ├── main.js                   # Entry point
+│   │   ├── ApiServer.js              # Express REST API + Socket.IO
+│   │   ├── NetworkManager.js         # UDP networking
+│   │   ├── RobotManager.js           # Robot discovery & control
+│   │   ├── Robot.js                  # Robot data model
+│   │   ├── ControllerManager.js      # Controller management
+│   │   └── ControllerInput.js        # Input handling
+│   ├── package.json                  # Node.js dependencies
+│   └── README.md                     # Backend documentation
 ├── frontend/                         # React + TypeScript UI
 │   ├── src/
 │   │   ├── components/               # React components
@@ -185,20 +187,19 @@ SoccerBotsSoftwareJava/
 │   │   │   ├── ServiceLog.tsx        # Event log
 │   │   │   └── TerminalMonitor.tsx   # Terminal output
 │   │   ├── services/
-│   │   │   └── api.ts                # Backend API client
+│   │   │   ├── api.ts                # Backend API client
+│   │   │   └── gamepad.ts            # Gamepad polling service
 │   │   ├── App.tsx                   # Main app component
 │   │   └── main.tsx                  # Entry point
 │   ├── package.json
 │   └── vite.config.ts
 ├── electron/                         # Electron wrapper
-│   ├── main.js                       # Main process (launches Python)
+│   ├── main.js                       # Main process (loads Node.js backend)
 │   ├── preload.js                    # Context bridge
 │   └── package.json
 ├── esp32_robot_firmware/             # ESP32 Arduino firmware
-├── legacy/                           # Old Java backend (deprecated)
-│   ├── src/                          # Java source code
-│   ├── pom.xml                       # Maven config
-│   └── README.md                     # Legacy documentation
+├── python_backend/                   # Python backend (DEPRECATED)
+├── legacy/                           # Old Java backend (DEPRECATED)
 ├── package.json                      # Root build scripts
 └── README.md                         # This file
 ```
@@ -381,9 +382,9 @@ python3 main.py
 ### Native Desktop App
 
 **Backend won't start:**
-- Ensure Python 3.8+ installed: `python3 --version`
+- Ensure Node.js 18+ installed: `node --version`
 - Check port 8080 is available
-- Install dependencies: `cd python_backend && pip3 install -r requirements.txt`
+- Install dependencies: `cd nodejs_backend && npm install`
 - View logs in Electron DevTools console
 
 **Frontend won't load:**
@@ -398,16 +399,16 @@ python3 main.py
 
 ### Controllers Not Detected
 
-- **Linux**: Ensure user has access to `/dev/input` devices
-  ```bash
-  sudo usermod -a -G input $USER
-  # Log out and back in
-  ```
-- **Windows**: Controllers should work automatically with pygame
+- **All Platforms**: Controllers use browser Gamepad API
+  - Plug in controller before starting app
+  - Press any button to activate the controller
+  - Check browser console (Ctrl+Shift+I) for gamepad detection logs
+  - Try unplugging and replugging the controller
+- **Windows**: Works automatically with most USB controllers
 - **macOS**: May need to install additional drivers for some controllers
+- **Linux**: Most controllers work out of the box
 - Try refreshing controller list in app
 - Check USB connection and permissions
-- Verify pygame is installed: `python3 -c "import pygame; print('OK')"`
 
 ### Robots Not Discovered
 
@@ -501,7 +502,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **Figma Community** - RobotControlDesktopApp design template
 - **React & Electron** - Modern desktop framework
 - **Python & Flask** - Backend framework
-- **pygame** - Cross-platform game controller support
+- **Express & Socket.IO** - Modern Node.js web framework and real-time communication
+- **Browser Gamepad API** - Native controller support in Electron/Chromium
 - **ESP32 Community** - Excellent hardware documentation
 
 ## 📞 Support
@@ -512,7 +514,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 |------|---------|
 | **Development (one command!)** | `npm run dev` |
 | Run native app (production) | `npm start` |
-| Run Python backend only | `cd python_backend && python3 main.py` |
+| Run Node.js backend only | `cd nodejs_backend && npm start` |
+| Run Python backend (deprecated) | `npm run dev:backend:python` |
 | Run legacy Java backend | `npm run dev:backend:legacy` |
 | Build everything | `npm run build:all` |
 | Flash ESP32 firmware | Open `esp32_robot_firmware/minibots.ino` in Arduino IDE → Upload |
@@ -534,5 +537,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-**Modern React UI + Python Backend = Simple, Powerful Robot Control** ✨
+**Modern React UI + Node.js Backend = Simple, Fast, Powerful Robot Control** ✨
 **Protocol: Automatic discovery with static port assignment - zero configuration!** 🤖
+**v2.0: Pure JavaScript stack - no Python dependencies required!** 🚀
