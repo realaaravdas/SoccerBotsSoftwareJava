@@ -1,62 +1,47 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const { spawn } = require('child_process');
 const isDev = require('electron-is-dev');
 
 let mainWindow;
-let pythonProcess;
+let backendServer = null;
 
 const API_PORT = 8080;
 
-function startPythonBackend() {
-  // Only start Python backend in production mode
+function startNodeBackend() {
+  // Only start Node.js backend in production mode
   // In dev mode, it's already started by npm run dev
   if (isDev) {
-    console.log('[Python Backend] Development mode - backend should already be running via npm run dev');
+    console.log('[Node.js Backend] Development mode - backend should already be running via npm run dev');
     return Promise.resolve();
   }
 
   return new Promise((resolve, reject) => {
-    const pythonPath = process.platform === 'win32' ? 'python' : 'python3';
-    const scriptPath = path.join(process.resourcesPath, 'python_backend', 'main.py');
+    try {
+      console.log('[Node.js Backend] Starting backend...');
+      
+      // Load backend modules directly (no subprocess needed!)
+      const NetworkManager = require('../nodejs_backend/src/NetworkManager');
+      const RobotManager = require('../nodejs_backend/src/RobotManager');
+      const ControllerManager = require('../nodejs_backend/src/ControllerManager');
+      const ApiServer = require('../nodejs_backend/src/ApiServer');
 
-    console.log('[Python Backend] Starting backend...');
-    console.log('[Python Backend] Script path:', scriptPath);
+      // Initialize managers
+      const networkManager = new NetworkManager();
+      const robotManager = new RobotManager(networkManager);
+      robotManager.startDiscovery();
+      const controllerManager = new ControllerManager(robotManager);
+      const apiServer = new ApiServer(robotManager, controllerManager, networkManager);
 
-    pythonProcess = spawn(pythonPath, [scriptPath, API_PORT.toString()], {
-      stdio: ['ignore', 'pipe', 'pipe']
-    });
+      // Start API server
+      apiServer.start(API_PORT);
+      backendServer = { apiServer, controllerManager, robotManager, networkManager };
 
-    pythonProcess.stdout.on('data', (data) => {
-      console.log(`[Python Backend] ${data.toString().trim()}`);
-
-      // Check if API server started successfully
-      if (data.toString().includes('API server running')) {
-        console.log('[Python Backend] Backend ready!');
-        resolve();
-      }
-    });
-
-    pythonProcess.stderr.on('data', (data) => {
-      console.error(`[Python Backend Error] ${data.toString().trim()}`);
-    });
-
-    pythonProcess.on('error', (error) => {
-      console.error('[Python Backend] Failed to start:', error);
+      console.log('[Node.js Backend] Backend ready!');
+      resolve();
+    } catch (error) {
+      console.error('[Node.js Backend] Failed to start:', error);
       reject(error);
-    });
-
-    pythonProcess.on('close', (code) => {
-      console.log(`[Python Backend] Process exited with code ${code}`);
-    });
-
-    // Timeout in case API server message is missed
-    setTimeout(() => {
-      if (pythonProcess && !pythonProcess.killed) {
-        console.log('[Python Backend] Timeout reached, assuming backend started');
-        resolve();
-      }
-    }, 5000);
+    }
   });
 }
 
@@ -100,7 +85,7 @@ app.whenReady().then(async () => {
   console.log('[Electron] App ready...');
 
   try {
-    await startPythonBackend();
+    await startNodeBackend();
     console.log('[Electron] Creating window...');
     createWindow();
   } catch (error) {
@@ -122,15 +107,19 @@ app.on('activate', () => {
 });
 
 app.on('before-quit', () => {
-  console.log('[Electron] Stopping Python backend...');
-  if (pythonProcess) {
-    pythonProcess.kill();
+  console.log('[Electron] Stopping Node.js backend...');
+  if (backendServer) {
+    backendServer.controllerManager.shutdown();
+    backendServer.robotManager.shutdown();
+    backendServer.networkManager.shutdown();
   }
 });
 
-// Handle Python process crashes
+// Handle process cleanup
 process.on('exit', () => {
-  if (pythonProcess) {
-    pythonProcess.kill();
+  if (backendServer) {
+    backendServer.controllerManager.shutdown();
+    backendServer.robotManager.shutdown();
+    backendServer.networkManager.shutdown();
   }
 });

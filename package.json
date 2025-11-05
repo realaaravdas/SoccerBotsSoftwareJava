@@ -1,19 +1,21 @@
 {
   "name": "soccerbots-control-system",
-  "version": "1.0.0",
-  "description": "SoccerBots Robot Control System - Native Desktop Application",
+  "version": "2.0.0",
+  "description": "SoccerBots Robot Control System - Native Desktop Application with Node.js Backend",
   "scripts": {
-    "build:backend": "echo 'Python backend ready - no build required'",
+    "build:backend": "echo 'Node.js backend ready - no build required'",
     "build:backend:legacy": "mvn clean compile assembly:single",
+    "build:backend:python": "echo 'Python backend (deprecated) - no build required'",
     "build:frontend": "cd frontend && npm run build",
     "build:all": "npm run build:backend && npm run build:frontend",
-    "dev:backend": "cd python_backend && python3 main.py",
+    "dev:backend": "cd nodejs_backend && npm start",
+    "dev:backend:python": "cd python_backend && python3 main.py",
     "dev:backend:legacy": "mvn exec:java -Dexec.mainClass=\"com.soccerbots.control.HeadlessLauncher\"",
     "dev:frontend": "cd frontend && npm run dev",
     "dev:electron": "cd electron && npm start",
     "dev": "concurrently --kill-others \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:electron:wait\"",
     "dev:electron:wait": "wait-on http://localhost:8080/api/health http://localhost:5173 --timeout 60000 && cd electron && npm run electron",
-    "install:all": "cd frontend && npm install && cd ../electron && npm install && cd ../python_backend && python3 -m pip install -r requirements.txt",
+    "install:all": "cd frontend && npm install && cd ../electron && npm install && cd ../nodejs_backend && npm install",
     "start": "npm run build:all && cd electron && npm start",
     "dist": "npm run build:all && cd electron && npm run build"
   },
@@ -21,7 +23,8 @@
     "robotics",
     "control",
     "desktop",
-    "electron"
+    "electron",
+    "nodejs"
   ],
   "author": "SoccerBots Team",
   "license": "MIT",

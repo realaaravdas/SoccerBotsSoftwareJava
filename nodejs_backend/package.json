@@ -1,0 +1,21 @@
+{
+  "name": "soccerbots-nodejs-backend",
+  "version": "1.0.0",
+  "description": "Node.js backend for SoccerBots Control System",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "dev": "nodemon src/main.js"
+  },
+  "keywords": ["robotics", "control", "udp", "gamepad"],
+  "author": "SoccerBots Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
