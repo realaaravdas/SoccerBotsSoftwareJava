@@ -82,11 +82,14 @@ class NetworkManager {
             const nameBytes = Buffer.from(robotName, 'utf-8').slice(0, 16);
             nameBytes.copy(packet, 0);
 
+            // Helper function to clamp values to 0-255 range
+            const clampToByte = (value) => Math.max(0, Math.min(255, value));
+
             // Axes data (6 bytes) - values 0-255
-            packet[16] = Math.max(0, Math.min(255, leftX));
-            packet[17] = Math.max(0, Math.min(255, leftY));
-            packet[18] = Math.max(0, Math.min(255, rightX));
-            packet[19] = Math.max(0, Math.min(255, rightY));
+            packet[16] = clampToByte(leftX);
+            packet[17] = clampToByte(leftY);
+            packet[18] = clampToByte(rightX);
+            packet[19] = clampToByte(rightY);
             packet[20] = 125; // unused axis
             packet[21] = 125; // unused axis
 

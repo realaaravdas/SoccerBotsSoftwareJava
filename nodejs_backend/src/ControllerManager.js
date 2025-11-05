@@ -7,6 +7,9 @@
 const { ControllerInput, GameController } = require('./ControllerInput');
 
 class ControllerManager {
+    // Polling interval constant
+    static POLLING_INTERVAL_MS = 16; // ~60Hz
+
     constructor(robotManager) {
         this.robotManager = robotManager;
         this.connectedControllers = new Map();
@@ -83,7 +86,7 @@ class ControllerManager {
         this.running = true;
         this.pollingInterval = setInterval(() => {
             this._pollControllerInputs();
-        }, 16); // ~60Hz polling
+        }, ControllerManager.POLLING_INTERVAL_MS);
 
         console.log('[ControllerManager] Input polling started');
     }

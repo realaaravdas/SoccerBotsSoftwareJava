@@ -3,9 +3,11 @@
  */
 
 const Robot = require('./Robot');
+const NetworkManager = require('./NetworkManager');
 
 class RobotManager {
     static ROBOT_TIMEOUT_SECONDS = 10.0; // Mark robot as disconnected after 10 seconds
+    static DISCOVERY_PORT = NetworkManager.DISCOVERY_PORT; // Import from NetworkManager
 
     constructor(networkManager, apiServer = null) {
         this.networkManager = networkManager;
@@ -44,7 +46,7 @@ class RobotManager {
             this._timeoutCheckLoop();
         }, 2000); // Check every 2 seconds
 
-        console.log(`[RobotManager] Discovery service started on port ${require('./NetworkManager').DISCOVERY_PORT}`);
+        console.log(`[RobotManager] Discovery service started on port ${RobotManager.DISCOVERY_PORT}`);
     }
 
     _handleDiscoveryPing(message, rinfo) {

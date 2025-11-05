@@ -9,6 +9,8 @@ class GamepadService {
     private gamepads: Map<number, Gamepad> = new Map();
     private pollingInterval: number | null = null;
     private isPolling: boolean = false;
+    private errorCount: number = 0;
+    private lastErrorLog: number = 0;
 
     start() {
         if (this.isPolling) {
@@ -81,7 +83,15 @@ class GamepadService {
                 gamepadData
             })
         }).catch(err => {
-            // Silently ignore errors to avoid flooding console
+            // Track errors but don't flood console
+            this.errorCount++;
+            const now = Date.now();
+            // Log only once per 5 seconds
+            if (now - this.lastErrorLog > 5000) {
+                console.warn(`[GamepadService] Failed to send gamepad state (${this.errorCount} errors):`, err.message);
+                this.lastErrorLog = now;
+                this.errorCount = 0;
+            }
         });
     }
 

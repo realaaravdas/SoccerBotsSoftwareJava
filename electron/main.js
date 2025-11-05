@@ -19,11 +19,16 @@ function startNodeBackend() {
     try {
       console.log('[Node.js Backend] Starting backend...');
       
+      // Determine backend path based on environment
+      const backendPath = isDev
+        ? path.join(__dirname, '..', 'nodejs_backend', 'src')
+        : path.join(process.resourcesPath, 'nodejs_backend', 'src');
+      
       // Load backend modules directly (no subprocess needed!)
-      const NetworkManager = require('../nodejs_backend/src/NetworkManager');
-      const RobotManager = require('../nodejs_backend/src/RobotManager');
-      const ControllerManager = require('../nodejs_backend/src/ControllerManager');
-      const ApiServer = require('../nodejs_backend/src/ApiServer');
+      const NetworkManager = require(path.join(backendPath, 'NetworkManager'));
+      const RobotManager = require(path.join(backendPath, 'RobotManager'));
+      const ControllerManager = require(path.join(backendPath, 'ControllerManager'));
+      const ApiServer = require(path.join(backendPath, 'ApiServer'));
 
       // Initialize managers
       const networkManager = new NetworkManager();
