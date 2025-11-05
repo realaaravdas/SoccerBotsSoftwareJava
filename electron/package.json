@@ -27,19 +27,14 @@
         "from": "../frontend/dist",
         "to": "frontend/dist",
         "filter": ["**/*"]
-      }
-    ],
-    "extraResources": [
+      },
       {
-        "from": "../python_backend",
-        "to": "python_backend",
-        "filter": [
-          "**/*",
-          "!**/__pycache__/**",
-          "!**/*.pyc"
-        ]
+        "from": "../nodejs_backend",
+        "to": "nodejs_backend",
+        "filter": ["**/*"]
       }
     ],
+    "extraResources": [],
     "win": {
       "target": "nsis",
       "icon": "build/icon.ico"
