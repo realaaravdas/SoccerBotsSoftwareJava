@@ -302,15 +302,21 @@ class ApiService {
   }
 
   async hideController(controllerId: string): Promise<void> {
-    await fetch(`${API_BASE_URL}/api/controllers/${controllerId}/hide`, {
+    const response = await fetch(`${API_BASE_URL}/api/controllers/${controllerId}/hide`, {
       method: 'POST'
     });
+    if (!response.ok) {
+      throw new Error(`Failed to hide controller: ${response.statusText}`);
+    }
   }
 
   async unhideController(controllerId: string): Promise<void> {
-    await fetch(`${API_BASE_URL}/api/controllers/${controllerId}/unhide`, {
+    const response = await fetch(`${API_BASE_URL}/api/controllers/${controllerId}/unhide`, {
       method: 'POST'
     });
+    if (!response.ok) {
+      throw new Error(`Failed to unhide controller: ${response.statusText}`);
+    }
   }
 
   async refreshControllers(): Promise<void> {
