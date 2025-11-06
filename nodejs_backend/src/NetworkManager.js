@@ -17,18 +17,10 @@ class NetworkManager {
         this.discoverySocket = null;
         this.isConnectedToNetwork = false;
         this.currentSsid = "";
-        
-        // Network statistics tracking
-        this.bytesSent = 0;
-        this.bytesReceived = 0;
-        this.lastStatsTime = Date.now();
-        this.downloadSpeed = 0; // MB/s
-        this.uploadSpeed = 0;   // MB/s
 
         this._initializeUdpSocket();
         this._initializeDiscoverySocket();
         this._checkCurrentNetworkStatus();
-        this._startStatsTracking();
     }
 
     _initializeUdpSocket() {
@@ -115,8 +107,6 @@ class NetworkManager {
             this.udpSocket.send(packet, NetworkManager.ESP32_UDP_PORT, targetIp, (err) => {
                 if (err) {
                     console.error(`[NetworkManager] Failed to send command to ${targetIp}: ${err.message}`);
-                } else {
-                    this.bytesSent += packet.length; // Track bytes sent
                 }
             });
         } catch (error) {
@@ -216,37 +206,6 @@ class NetworkManager {
             console.error(`[NetworkManager] Failed to get network subnet: ${error.message}`);
             return null;
         }
-    }
-
-    /**
-     * Start tracking network statistics
-     */
-    _startStatsTracking() {
-        setInterval(() => {
-            const now = Date.now();
-            const elapsedSeconds = (now - this.lastStatsTime) / 1000;
-            
-            // Calculate speeds in MB/s
-            this.downloadSpeed = (this.bytesReceived / elapsedSeconds) / (1024 * 1024);
-            this.uploadSpeed = (this.bytesSent / elapsedSeconds) / (1024 * 1024);
-            
-            // Reset counters
-            this.bytesSent = 0;
-            this.bytesReceived = 0;
-            this.lastStatsTime = now;
-        }, 5000); // Update every 5 seconds
-    }
-
-    /**
-     * Get current network statistics
-     */
-    getNetworkStats() {
-        return {
-            downloadSpeed: this.downloadSpeed,
-            uploadSpeed: this.uploadSpeed,
-            bytesSent: this.bytesSent,
-            bytesReceived: this.bytesReceived
-        };
     }
 
     /**

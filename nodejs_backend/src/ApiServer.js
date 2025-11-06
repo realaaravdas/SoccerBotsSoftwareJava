@@ -178,24 +178,9 @@ class ApiServer {
             res.json({ success: true });
         });
 
-        // Hide controller
-        this.app.post('/api/controllers/:controllerId/hide', (req, res) => {
-            this.controllerManager.hideController(req.params.controllerId);
-            this.broadcastUpdate('controllers_updated', {});
-            res.json({ success: true });
-        });
-
-        // Unhide controller
-        this.app.post('/api/controllers/:controllerId/unhide', (req, res) => {
-            this.controllerManager.unhideController(req.params.controllerId);
-            this.broadcastUpdate('controllers_updated', {});
-            res.json({ success: true });
-        });
-
         // Refresh controllers
         this.app.post('/api/controllers/refresh', (req, res) => {
             this.controllerManager.refreshControllers();
-            this.broadcastUpdate('controllers_updated', {});
             res.json({ success: true });
         });
 
@@ -237,11 +222,10 @@ class ApiServer {
 
         // Get network statistics
         this.app.get('/api/network/stats', (req, res) => {
-            const stats = this.networkManager.getNetworkStats();
             res.json({
                 timestamp: Date.now(),
-                downloadSpeed: stats.downloadSpeed,
-                uploadSpeed: stats.uploadSpeed,
+                latency: 10, // Placeholder
+                bandwidth: 100, // Placeholder
                 activeConnections: this.robotManager.getConnectedRobots().length
             });
         });

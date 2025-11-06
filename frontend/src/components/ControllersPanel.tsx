@@ -1,4 +1,4 @@
-import { Gamepad2, Link, Unlink, Power, Ban, Circle, RefreshCw, X } from "lucide-react";
+import { Gamepad2, Link, Unlink, Power, Ban, Circle, RefreshCw } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { ScrollArea } from "./ui/scroll-area";
@@ -24,7 +24,6 @@ interface ControllersPanelProps {
   onUnpair: (controllerId: string) => void;
   onEnable: (controllerId: string) => void;
   onDisable: (controllerId: string) => void;
-  onHide: (controllerId: string) => void;
   onRefresh: () => void;
   pairingControllerId: string | null;
   onStartPairing: (controllerId: string) => void;
@@ -38,7 +37,6 @@ export function ControllersPanel({
   onUnpair,
   onEnable,
   onDisable,
-  onHide,
   onRefresh,
   pairingControllerId,
   onStartPairing,
@@ -182,14 +180,6 @@ export function ControllersPanel({
                     ) : (
                       <Ban className="h-4 w-4" />
                     )}
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => onHide(controller.id)}
-                    className="h-7 w-7 p-0 bg-gray-500/20 hover:bg-gray-500/30 text-gray-400 border border-gray-500/50"
-                    title="Hide controller (will reappear on refresh)"
-                  >
-                    <X className="h-4 w-4" />
                   </Button>
                 </div>
 
