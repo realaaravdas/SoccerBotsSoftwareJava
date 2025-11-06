@@ -27,8 +27,8 @@ export interface Controller {
 
 export interface NetworkStats {
   timestamp: number;
-  latency: number;
-  bandwidth: number;
+  downloadSpeed: number;
+  uploadSpeed: number;
   activeConnections: number;
 }
 
@@ -299,6 +299,24 @@ class ApiService {
     await fetch(`${API_BASE_URL}/api/controllers/${controllerId}/disable`, {
       method: 'POST'
     });
+  }
+
+  async hideController(controllerId: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/api/controllers/${controllerId}/hide`, {
+      method: 'POST'
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to hide controller: ${response.statusText}`);
+    }
+  }
+
+  async unhideController(controllerId: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/api/controllers/${controllerId}/unhide`, {
+      method: 'POST'
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to unhide controller: ${response.statusText}`);
+    }
   }
 
   async refreshControllers(): Promise<void> {

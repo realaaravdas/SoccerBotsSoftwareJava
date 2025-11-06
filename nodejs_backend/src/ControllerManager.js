@@ -15,6 +15,7 @@ class ControllerManager {
         this.connectedControllers = new Map();
         this.controllerRobotPairings = new Map();
         this.controllerEnabled = new Map();
+        this.hiddenControllers = new Set(); // Track hidden controllers
         this.running = false;
         this.pollingInterval = null;
         this.emergencyStopActive = false;
@@ -163,7 +164,10 @@ class ControllerManager {
     }
 
     getConnectedControllers() {
-        return Array.from(this.connectedControllers.values()).map(c => c.toDict());
+        // Filter out hidden controllers from the list
+        return Array.from(this.connectedControllers.values())
+            .filter(c => !this.hiddenControllers.has(c.id))
+            .map(c => c.toDict());
     }
 
     getConnectedControllerCount() {
@@ -221,8 +225,35 @@ class ControllerManager {
 
     refreshControllers() {
         console.log('[ControllerManager] Manual controller refresh requested');
+        // Clear hidden controllers on refresh so they can reappear
+        this.hiddenControllers.clear();
+        console.log('[ControllerManager] Cleared hidden controllers list');
         // In this implementation, controllers are updated externally via updateGamepadState
         // So refresh is a no-op
+    }
+
+    hideController(controllerId) {
+        if (this.connectedControllers.has(controllerId)) {
+            this.hiddenControllers.add(controllerId);
+            console.log(`[ControllerManager] Hidden controller ${controllerId}`);
+            return true;
+        } else {
+            console.warn(`[ControllerManager] Cannot hide - controller not found: ${controllerId}`);
+            return false;
+        }
+    }
+
+    unhideController(controllerId) {
+        const wasHidden = this.hiddenControllers.has(controllerId);
+        this.hiddenControllers.delete(controllerId);
+        if (wasHidden) {
+            console.log(`[ControllerManager] Unhidden controller ${controllerId}`);
+        }
+        return wasHidden;
+    }
+
+    isControllerHidden(controllerId) {
+        return this.hiddenControllers.has(controllerId);
     }
 
     activateEmergencyStop() {
