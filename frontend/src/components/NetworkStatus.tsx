@@ -20,6 +20,7 @@ export function NetworkStatus({ download, upload, connected }: NetworkStatusProp
         color: "text-red-400",
         bgColor: "bg-red-500/20",
         borderColor: "border-red-500/50",
+        dotColor: "bg-red-400",
         label: "Not Connected",
         description: "Network unavailable",
       };
@@ -29,6 +30,7 @@ export function NetworkStatus({ download, upload, connected }: NetworkStatusProp
         color: "text-green-400",
         bgColor: "bg-green-500/20",
         borderColor: "border-green-500/50",
+        dotColor: "bg-green-400",
         label: "Connected - Good",
         description: "Network optimal",
       };
@@ -38,6 +40,7 @@ export function NetworkStatus({ download, upload, connected }: NetworkStatusProp
         color: "text-yellow-400",
         bgColor: "bg-yellow-500/20",
         borderColor: "border-yellow-500/50",
+        dotColor: "bg-yellow-400",
         label: "Connected - Poor",
         description: "Network degraded",
       };
@@ -59,7 +62,7 @@ export function NetworkStatus({ download, upload, connected }: NetworkStatusProp
             <div className={`text-sm font-semibold ${config.color}`}>{config.label}</div>
             <div className="text-xs text-gray-400">{config.description}</div>
           </div>
-          <div className={`h-2 w-2 rounded-full ${config.color.replace('text-', 'bg-')} ${connected ? 'animate-pulse' : ''}`} />
+          <div className={`h-2 w-2 rounded-full ${config.dotColor} ${connected ? 'animate-pulse' : ''}`} />
         </div>
 
         {/* Network metrics */}
