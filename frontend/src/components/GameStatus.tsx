@@ -44,40 +44,29 @@ export function GameStatus({ status, robotCount = 0, activeRobots = 0 }: GameSta
   const StatusIcon = config.icon;
 
   return (
-    <div className="h-full backdrop-blur-md bg-black/30 border border-white/10 rounded-lg p-4">
-      <h2 className="text-cyan-400 mb-4">Game Status</h2>
+    <div className="h-full backdrop-blur-md bg-black/30 border border-white/10 rounded-lg p-3">
+      <h2 className="text-cyan-400 mb-2 text-xs font-semibold">Game Status</h2>
       
-      <div className="flex flex-col gap-4 h-[calc(100%-3rem)]">
-        {/* Status indicator */}
-        <div className={`flex items-center gap-3 p-4 rounded-lg ${config.bgColor} border ${config.borderColor}`}>
-          <StatusIcon className={`h-8 w-8 ${config.color}`} />
-          <div className="flex-1">
-            <div className={`text-lg font-semibold ${config.color}`}>{config.label}</div>
-            <div className="text-xs text-gray-400">{config.description}</div>
+      <div className="flex flex-col gap-2">
+        {/* Compact status indicator */}
+        <div className={`flex items-center gap-2 p-2 rounded-md ${config.bgColor} border ${config.borderColor}`}>
+          <StatusIcon className={`h-4 w-4 ${config.color}`} />
+          <div className="flex-1 min-w-0">
+            <div className={`text-xs font-semibold ${config.color} truncate`}>{config.label}</div>
           </div>
-          <div className={`h-3 w-3 rounded-full ${config.color.replace('text-', 'bg-')} animate-pulse`} />
+          <div className={`h-1.5 w-1.5 rounded-full ${config.color.replace('text-', 'bg-')} animate-pulse`} />
         </div>
 
-        {/* Robot statistics */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-md p-3">
-            <div className="text-2xl font-bold text-cyan-400">{robotCount}</div>
-            <div className="text-xs text-gray-400">Total Robots</div>
+        {/* Compact robot statistics */}
+        <div className="grid grid-cols-2 gap-1.5 text-center">
+          <div className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-sm p-1.5">
+            <div className="text-xs font-bold text-cyan-400">{robotCount}</div>
+            <div className="text-[10px] text-gray-400">Total</div>
           </div>
-          <div className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-md p-3">
-            <div className="text-2xl font-bold text-green-400">{activeRobots}</div>
-            <div className="text-xs text-gray-400">Active</div>
+          <div className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-sm p-1.5">
+            <div className="text-xs font-bold text-green-400">{activeRobots}</div>
+            <div className="text-[10px] text-gray-400">Active</div>
           </div>
-        </div>
-
-        {/* Status badge */}
-        <div className="flex justify-center">
-          <Badge
-            variant="outline"
-            className={`${config.bgColor} ${config.color} ${config.borderColor} px-4 py-2 text-sm`}
-          >
-            System {config.label}
-          </Badge>
         </div>
       </div>
     </div>

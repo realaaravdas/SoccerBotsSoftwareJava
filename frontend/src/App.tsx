@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ConnectionPanel } from "./components/ConnectionPanel";
 import { ControllersPanel } from "./components/ControllersPanel";
-import { NetworkSpeedometer } from "./components/NetworkSpeedometer";
+import { NetworkStatus } from "./components/NetworkStatus";
 import { GameStatus } from "./components/GameStatus";
 import { MonitorTabs } from "./components/MonitorTabs";
 import { ControlPanel } from "./components/ControlPanel";
@@ -17,6 +17,7 @@ export default function App() {
   const [selectedRobots, setSelectedRobots] = useState<string[]>([]);
   const [networkDownload, setNetworkDownload] = useState(0);
   const [networkUpload, setNetworkUpload] = useState(0);
+  const [networkConnected, setNetworkConnected] = useState(true);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [terminalLines, setTerminalLines] = useState<string[]>([
     "$ Robot Control System v3.2.1 initialized",
@@ -193,8 +194,10 @@ export default function App() {
         const stats = await apiService.getNetworkStats();
         setNetworkDownload(stats.downloadSpeed);
         setNetworkUpload(stats.uploadSpeed);
+        setNetworkConnected(true);
       } catch (error) {
         console.error("[App] Failed to fetch network stats:", error);
+        setNetworkConnected(false);
       }
     }, 5000);
 
@@ -495,9 +498,13 @@ export default function App() {
 
         {/* Center and Right Columns Combined */}
         <div className="col-span-9 flex flex-col gap-6 h-[calc(100vh-180px)] min-h-0">
-          {/* Top Row: Network Speed, Game Status, Control Panel */}
-          <div className="grid grid-cols-3 gap-6 h-48 min-h-0 shrink-0">
-            <NetworkSpeedometer download={networkDownload} upload={networkUpload} />
+          {/* Top Row: Network Status, Game Status, Control Panel */}
+          <div className="grid grid-cols-3 gap-4 h-32 min-h-0 shrink-0">
+            <NetworkStatus 
+              download={networkDownload} 
+              upload={networkUpload} 
+              connected={networkConnected}
+            />
             <GameStatus 
               status={emergencyActive ? "e-stop" : (robots.some(r => !r.disabled && r.status === "connected") ? "active" : "standby")}
               robotCount={robots.length}

@@ -71,108 +71,108 @@ export function ControlPanel({ onEmergencyStop, emergencyActive }: ControlPanelP
   };
 
   return (
-    <div className="h-full backdrop-blur-md bg-black/30 border border-white/10 rounded-lg p-4 flex flex-col">
-      <h2 className="text-cyan-400 mb-4 shrink-0">Control Panel</h2>
+    <div className="h-full backdrop-blur-md bg-black/30 border border-white/10 rounded-lg p-3 flex flex-col overflow-hidden">
+      <h2 className="text-cyan-400 mb-2 text-xs font-semibold shrink-0">Control Panel</h2>
       
-      <div className="flex flex-col gap-4">
-      {/* Timer */}
-      <div className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-4">
-        <div className="text-center mb-3">
-          <div className="text-sm text-gray-300 mb-2">Match Timer</div>
-          <div className="text-4xl font-mono text-cyan-400">{formatTime(timeRemaining)}</div>
+      <div className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto">
+      {/* Compact Timer */}
+      <div className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-md p-2">
+        <div className="text-center">
+          <div className="text-[10px] text-gray-300 mb-1">Match Timer</div>
+          <div className="text-xl font-mono text-cyan-400 mb-1">{formatTime(timeRemaining)}</div>
         </div>
 
-        {/* Timer Controls */}
-        <div className="flex gap-2 mb-3">
+        {/* Compact Timer Controls */}
+        <div className="flex gap-1 mb-2">
           <Button
             size="sm"
             onClick={handleStartStop}
-            className="flex-1 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/50"
+            className="flex-1 h-7 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/50 p-0"
           >
-            {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            {isRunning ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
           </Button>
           <Button
             size="sm"
             onClick={handleReset}
-            className="bg-white/10 hover:bg-white/20 text-white border border-white/20"
+            className="h-7 w-7 p-0 bg-white/10 hover:bg-white/20 text-white border border-white/20"
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw className="h-3 w-3" />
           </Button>
         </div>
 
-        {/* Duration Adjustment */}
+        {/* Compact Duration Adjustment */}
         {!isRunning && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-center gap-1 text-xs text-gray-400">
-              <Clock className="h-3 w-3" />
-              <span>Adjust Duration</span>
+          <div className="space-y-1">
+            <div className="flex items-center justify-center gap-1 text-[10px] text-gray-400 mb-1">
+              <Clock className="h-2.5 w-2.5" />
+              <span>Adjust</span>
             </div>
 
             {/* Minutes adjustment */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400 w-12">Min:</span>
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-gray-400 w-8">Min:</span>
               <Button
                 size="sm"
                 onClick={() => adjustDuration(-60)}
                 disabled={matchDuration <= 60}
-                className="flex-1 h-7 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/50 disabled:opacity-30"
+                className="flex-1 h-6 text-[10px] bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/50 disabled:opacity-30 p-0"
               >
-                <Minus className="h-3 w-3" />
+                <Minus className="h-2.5 w-2.5" />
               </Button>
               <Button
                 size="sm"
                 onClick={() => adjustDuration(60)}
-                className="flex-1 h-7 bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/50"
+                className="flex-1 h-6 text-[10px] bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/50 p-0"
               >
-                <Plus className="h-3 w-3" />
+                <Plus className="h-2.5 w-2.5" />
               </Button>
             </div>
 
             {/* Seconds adjustment */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400 w-12">Sec:</span>
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-gray-400 w-8">Sec:</span>
               <Button
                 size="sm"
                 onClick={() => adjustDuration(-10)}
                 disabled={matchDuration <= 10}
-                className="flex-1 h-7 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/50 disabled:opacity-30"
+                className="flex-1 h-6 text-[10px] bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/50 disabled:opacity-30 p-0"
               >
-                <Minus className="h-3 w-3" />
+                <Minus className="h-2.5 w-2.5" />
               </Button>
               <Button
                 size="sm"
                 onClick={() => adjustDuration(10)}
-                className="flex-1 h-7 bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/50"
+                className="flex-1 h-6 text-[10px] bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/50 p-0"
               >
-                <Plus className="h-3 w-3" />
+                <Plus className="h-2.5 w-2.5" />
               </Button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Emergency Stop */}
-      <div className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-4">
-        <div className="text-center mb-3">
-          <div className="text-sm text-gray-300 mb-2">Emergency Controls</div>
+      {/* Compact Emergency Stop */}
+      <div className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-md p-2">
+        <div className="text-center mb-1">
+          <div className="text-[10px] text-gray-300">Emergency</div>
         </div>
         <Button
-          size="lg"
+          size="sm"
           onClick={onEmergencyStop}
-          className={`w-full h-24 transition-all ${
+          className={`w-full h-12 transition-all text-xs ${
             emergencyActive
               ? "bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-500/50 animate-pulse"
               : "bg-red-500/20 hover:bg-red-500/30 text-red-400 border-2 border-red-500/50"
           }`}
         >
-          <div className="flex flex-col items-center gap-2">
-            <AlertTriangle className="h-8 w-8" />
-            <span className="text-lg">EMERGENCY STOP</span>
+          <div className="flex flex-col items-center gap-0.5">
+            <AlertTriangle className="h-4 w-4" />
+            <span className="text-[10px] font-semibold">E-STOP</span>
           </div>
         </Button>
         {emergencyActive && (
-          <div className="mt-3 text-center text-red-400 text-sm animate-pulse">
-            ⚠️ Emergency Stop Active
+          <div className="mt-1 text-center text-red-400 text-[10px] animate-pulse">
+            ⚠️ Active
           </div>
         )}
       </div>
