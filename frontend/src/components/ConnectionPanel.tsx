@@ -91,7 +91,7 @@ export function ConnectionPanel({ robots, selectedRobots, onConnect, onDisconnec
               <div className="text-xs text-gray-300 mb-2">
                 {robot.ipAddress}
                 {robot.pairedControllerId && (
-                  <span className="ml-2 text-cyan-400">• Paired</span>
+                  <span className="ml-2 text-cyan-400">• Paired to {robot.pairedControllerId}</span>
                 )}
               </div>
               {robot.signal && !robot.disabled && (

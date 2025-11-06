@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class RobotManager:
     """Manages ESP32 robot discovery, connection, and command transmission"""
 
-    ROBOT_TIMEOUT_SECONDS = 10.0  # Mark robot as disconnected after 10 seconds of no pings
+    ROBOT_TIMEOUT_SECONDS = 60.0  # Mark robot as disconnected after 60 seconds of no pings
 
     def __init__(self, network_manager: NetworkManager, api_server=None): # Add api_server parameter
         self.network_manager = network_manager
@@ -115,7 +115,7 @@ class RobotManager:
                     for robot_id, robot in list(self.connected_robots.items()):
                         time_since_seen = current_time - robot.last_seen_time
                         if time_since_seen > self.ROBOT_TIMEOUT_SECONDS:
-                            logger.warn(f"Robot {robot_id} timed out (no ping for {time_since_seen:.1f}s)")
+                            logger.warn(f"Robot {robot_id} timed out (no ping for {time_since_seen:.1f}s). Paired controller: {robot.paired_controller_id}")
                             # Broadcast receiving: False before removing
                             if self.api_server:
                                 self.api_server.broadcast_robot_receiving_command(robot_id, False)

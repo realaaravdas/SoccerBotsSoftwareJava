@@ -27,6 +27,8 @@ class ControllerManager:
         self._detection_thread: Optional[threading.Thread] = None
         self._polling_thread: Optional[threading.Thread] = None
         self.emergency_stop_active = False
+        # Debounce transient disconnects: require missing 3 scans (~6s) before removal
+        self._missing_counts: Dict[str, int] = {}
         
         # Initialize pygame for controller support
         try:
@@ -58,7 +60,7 @@ class ControllerManager:
             except Exception as e:
                 logger.error(f"Error detecting controllers: {e}")
             
-            time.sleep(5)  # Scan every 5 seconds (reduced frequency for stability)
+            time.sleep(2)  # Scan every 2 seconds
     
     def _detect_controllers(self):
         """Detect connected game controllers"""
@@ -118,15 +120,31 @@ class ControllerManager:
                 disconnected = set(self.connected_controllers.keys()) - current_controller_ids
                 for controller_id in disconnected:
                     # Double-check by trying to find the joystick
-                    # This prevents removing controllers that are still connected but
-                    # temporarily not detected (e.g., during brief system hiccups)
                     joystick = self.controller_joysticks.get(controller_id)
                     if joystick and joystick.get_init():
                         # Controller still exists, don't remove it
-                        # Add it back to current_controller_ids to keep it alive
                         current_controller_ids.add(controller_id)
+                        self._missing_counts.pop(controller_id, None)
                         continue
-                    
+
+                    # Increment missing count and only remove after threshold (3 scans ~6s)
+                    miss = self._missing_counts.get(controller_id, 0) + 1
+                    self._missing_counts[controller_id] = miss
+                    if miss < 3:
+                        # Keep it for now to avoid flicker; skip removal this cycle
+                        continue
+
+                    # Proceed with removal after confirmed missing
+                    self._missing_counts.pop(controller_id, None)
+
+                    # If it was paired, unpair from robot first
+                    if controller_id in self.controller_robot_pairings:
+                        robot_id = self.controller_robot_pairings[controller_id]
+                        robot = self.robot_manager.get_robot(robot_id)
+                        if robot:
+                            robot.set_paired_controller(None)
+                        del self.controller_robot_pairings[controller_id]
+
                     logger.info(f"Controller disconnected: {controller_id}")
                     del self.connected_controllers[controller_id]
                     if controller_id in self.controller_joysticks:
@@ -135,8 +153,6 @@ class ControllerManager:
                         except Exception:
                             pass
                         del self.controller_joysticks[controller_id]
-                    if controller_id in self.controller_robot_pairings:
-                        del self.controller_robot_pairings[controller_id]
                     if controller_id in self.controller_enabled:
                         del self.controller_enabled[controller_id]
         
@@ -274,6 +290,8 @@ class ControllerManager:
         """Pair controller with robot"""
         with self._lock:
             if controller_id in self.connected_controllers:
+                game_controller = self.connected_controllers[controller_id]
+                game_controller.set_paired_robot_id(robot_id)
                 self.controller_robot_pairings[controller_id] = robot_id
 
                 # Update robot's pairedControllerId
@@ -290,6 +308,9 @@ class ControllerManager:
         with self._lock:
             if controller_id in self.controller_robot_pairings:
                 robot_id = self.controller_robot_pairings[controller_id]
+                game_controller = self.connected_controllers.get(controller_id)
+                if game_controller:
+                    game_controller.set_paired_robot_id(None)
 
                 # Clear robot's pairedControllerId
                 robot = self.robot_manager.get_robot(robot_id)

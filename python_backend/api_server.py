@@ -140,7 +140,6 @@ class ApiServer:
             controllers_list = []
             for controller in self.controller_manager.get_connected_controllers():
                 controller_data = controller.to_dict()
-                controller_data['pairedRobotId'] = self.controller_manager.get_paired_robot_id(controller.id)
                 controller_data['enabled'] = self.controller_manager.is_controller_enabled(controller.id)
                 controllers_list.append(controller_data)
             return jsonify(controllers_list)

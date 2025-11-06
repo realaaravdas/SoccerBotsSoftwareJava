@@ -118,6 +118,7 @@ export default function App() {
   const fetchRobots = async () => {
     try {
       const robotsData = await apiService.getRobots();
+      console.log("[App] Raw robots data from API:", robotsData);
       // Strict filtering - only show robots that are actually online
       const currentTime = Date.now() / 1000; // Current time in seconds
       const filteredRobots = robotsData.filter((robot: Robot) => {
@@ -137,16 +138,9 @@ export default function App() {
 
         return true;
       });
+      console.log("[App] Filtered robots data:", filteredRobots);
 
-      // Only update if there's an actual change - prevents unnecessary re-renders
-      setRobots((prevRobots) => {
-        if (JSON.stringify(prevRobots) === JSON.stringify(filteredRobots)) {
-          console.log("[App] Robots unchanged, skipping update");
-          return prevRobots;
-        }
-        console.log("[App] Fetched robots with changes:", filteredRobots);
-        return filteredRobots;
-      });
+      setRobots(filteredRobots);
     } catch (error) {
       console.error("[App] Failed to fetch robots:", error);
       addTerminalLine("$ Error: Failed to fetch robot list");
@@ -156,23 +150,10 @@ export default function App() {
   const fetchControllers = async () => {
     try {
       const controllersData = await apiService.getControllers();
+      console.log("[App] Raw controllers data from API:", controllersData);
 
       // Only update if there's an actual change - prevents unnecessary re-renders
-      setControllers((prevControllers) => {
-        // Deep comparison of controller data
-        const prevJson = JSON.stringify(prevControllers);
-        const newJson = JSON.stringify(controllersData);
-
-        if (prevJson === newJson) {
-          console.log("[App] Controllers unchanged, skipping update (prevents re-render)");
-          return prevControllers; // Return previous state to prevent re-render
-        }
-
-        console.log("[App] Controllers changed, updating state");
-        console.log("[App] Previous:", prevControllers);
-        console.log("[App] New:", controllersData);
-        return controllersData;
-      });
+      setControllers(controllersData);
     } catch (error) {
       console.error("[App] Failed to fetch controllers:", error);
       addTerminalLine("$ Error: Failed to fetch controller list");
@@ -357,8 +338,10 @@ export default function App() {
       toast.success("Controller paired successfully");
       addTerminalLine(`$ Paired controller to robot`);
       setPairingControllerId(null); // Close pairing UI after successful pair
-      await fetchControllers();
-      await fetchRobots();
+      setTimeout(async () => {
+        await fetchControllers();
+        await fetchRobots();
+      }, 200); // Add a small delay to allow backend to update
     } catch (error) {
       console.error("[App] Failed to pair controller:", error);
       toast.error("Failed to pair controller");
@@ -380,8 +363,10 @@ export default function App() {
       await apiService.unpairController(controllerId);
       toast.success("Controller unpaired");
       addTerminalLine(`$ Unpaired controller`);
-      await fetchControllers();
-      await fetchRobots();
+      setTimeout(async () => {
+        await fetchControllers();
+        await fetchRobots();
+      }, 200); // Add a small delay to allow backend to update
     } catch (error) {
       console.error("[App] Failed to unpair controller:", error);
       toast.error("Failed to unpair controller");
