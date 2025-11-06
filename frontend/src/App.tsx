@@ -493,16 +493,17 @@ export default function App() {
           </ResizablePanelGroup>
         </div>
 
-        {/* Center Column */}
-        <div className="col-span-6 flex flex-col gap-6 h-[calc(100vh-180px)] min-h-0">
-          {/* Network Speed and Game Status */}
-          <div className="grid grid-cols-2 gap-6 h-48 min-h-0 shrink-0">
+        {/* Center and Right Columns Combined */}
+        <div className="col-span-9 flex flex-col gap-6 h-[calc(100vh-180px)] min-h-0">
+          {/* Top Row: Network Speed, Game Status, Control Panel */}
+          <div className="grid grid-cols-3 gap-6 h-48 min-h-0 shrink-0">
             <NetworkSpeedometer download={networkDownload} upload={networkUpload} />
             <GameStatus 
               status={emergencyActive ? "e-stop" : (robots.some(r => !r.disabled && r.status === "connected") ? "active" : "standby")}
               robotCount={robots.length}
               activeRobots={robots.filter(r => !r.disabled && r.status === "connected").length}
             />
+            <ControlPanel onEmergencyStop={handleEmergencyStop} emergencyActive={emergencyActive} />
           </div>
 
           {/* Terminal Monitor with Service Log tabs */}
@@ -512,14 +513,6 @@ export default function App() {
               logs={logs}
               onClearLogs={handleClearLogs}
             />
-          </div>
-        </div>
-
-        {/* Right Column */}
-        <div className="col-span-3 flex flex-col gap-6 h-[calc(100vh-180px)] min-h-0">
-          {/* Control Panel */}
-          <div className="flex-1 min-h-0">
-            <ControlPanel onEmergencyStop={handleEmergencyStop} emergencyActive={emergencyActive} />
           </div>
         </div>
       </div>
