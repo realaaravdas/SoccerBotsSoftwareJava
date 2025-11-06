@@ -499,7 +499,7 @@ export default function App() {
         {/* Center and Right Columns Combined */}
         <div className="col-span-9 flex flex-col gap-6 h-[calc(100vh-180px)] min-h-0">
           {/* Top Row: Network Status, Game Status, Control Panel */}
-          <div className="grid grid-cols-3 gap-6 h-48 min-h-0 shrink-0">
+          <div className="grid grid-cols-3 gap-4 h-32 min-h-0 shrink-0">
             <NetworkStatus 
               download={networkDownload} 
               upload={networkUpload} 
