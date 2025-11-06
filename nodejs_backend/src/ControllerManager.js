@@ -236,20 +236,14 @@ class ControllerManager {
         if (this.connectedControllers.has(controllerId)) {
             this.hiddenControllers.add(controllerId);
             console.log(`[ControllerManager] Hidden controller ${controllerId}`);
-            return true;
         } else {
             console.warn(`[ControllerManager] Cannot hide - controller not found: ${controllerId}`);
-            return false;
         }
     }
 
     unhideController(controllerId) {
-        const wasHidden = this.hiddenControllers.has(controllerId);
         this.hiddenControllers.delete(controllerId);
-        if (wasHidden) {
-            console.log(`[ControllerManager] Unhidden controller ${controllerId}`);
-        }
-        return wasHidden;
+        console.log(`[ControllerManager] Unhidden controller ${controllerId}`);
     }
 
     isControllerHidden(controllerId) {
