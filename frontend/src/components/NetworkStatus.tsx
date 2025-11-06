@@ -7,11 +7,14 @@ interface NetworkStatusProps {
   connected: boolean;
 }
 
+// Network quality threshold in MB/s
+const NETWORK_QUALITY_THRESHOLD = 0.1;
+
 export function NetworkStatus({ download, upload, connected }: NetworkStatusProps) {
-  // Determine overall status based on latency and bandwidth
-  // Good: both download and upload > 0.1 MB/s
-  // Bad: either download or upload < 0.1 MB/s or disconnected
-  const isGood = connected && download > 0.1 && upload > 0.1;
+  // Determine overall status based on bandwidth (download/upload speeds)
+  // Good: both download and upload above threshold
+  // Poor: either download or upload below threshold or disconnected
+  const isGood = connected && download > NETWORK_QUALITY_THRESHOLD && upload > NETWORK_QUALITY_THRESHOLD;
   
   const getStatusConfig = () => {
     if (!connected) {
