@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { ConnectionPanel } from "./components/ConnectionPanel";
 import { ControllersPanel } from "./components/ControllersPanel";
-import { NetworkAnalysis } from "./components/NetworkAnalysis";
+import { NetworkSpeedometer } from "./components/NetworkSpeedometer";
+import { GameStatus } from "./components/GameStatus";
+import { MonitorTabs } from "./components/MonitorTabs";
 import { ControlPanel } from "./components/ControlPanel";
-import { ServiceLog } from "./components/ServiceLog";
-import { TerminalMonitor } from "./components/TerminalMonitor";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "./components/ui/resizable";
 import { Activity } from "lucide-react";
 import { toast, Toaster } from "sonner";
@@ -15,7 +15,8 @@ export default function App() {
   const [robots, setRobots] = useState<Robot[]>([]);
   const [controllers, setControllers] = useState<Controller[]>([]);
   const [selectedRobots, setSelectedRobots] = useState<string[]>([]);
-  const [networkData, setNetworkData] = useState<any[]>([]);
+  const [networkDownload, setNetworkDownload] = useState(0);
+  const [networkUpload, setNetworkUpload] = useState(0);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [terminalLines, setTerminalLines] = useState<string[]>([
     "$ Robot Control System v3.2.1 initialized",
@@ -186,28 +187,12 @@ export default function App() {
   };
 
   const startNetworkPolling = () => {
-    // Initial network data
-    const initialData = Array.from({ length: 6 }, (_, i) => ({
-      time: `${i * 5}s`,
-      latency: Math.floor(Math.random() * 10) + 10,
-      bandwidth: Math.floor(Math.random() * 10) + 45,
-    }));
-    setNetworkData(initialData);
-
     // Poll network stats every 5 seconds
     const interval = setInterval(async () => {
       try {
         const stats = await apiService.getNetworkStats();
-        setNetworkData((prev) => {
-          const newData = [...prev.slice(1)];
-          const lastTime = parseInt(prev[prev.length - 1].time);
-          newData.push({
-            time: `${lastTime + 5}s`,
-            latency: stats.latency,
-            bandwidth: stats.bandwidth,
-          });
-          return newData;
-        });
+        setNetworkDownload(stats.downloadSpeed);
+        setNetworkUpload(stats.uploadSpeed);
       } catch (error) {
         console.error("[App] Failed to fetch network stats:", error);
       }
@@ -510,27 +495,31 @@ export default function App() {
 
         {/* Center Column */}
         <div className="col-span-6 flex flex-col gap-6 h-[calc(100vh-180px)] min-h-0">
-          {/* Network Analysis */}
-          <div className="h-64 min-h-0 shrink-0">
-            <NetworkAnalysis data={networkData} />
+          {/* Network Speed and Game Status */}
+          <div className="grid grid-cols-2 gap-6 h-48 min-h-0 shrink-0">
+            <NetworkSpeedometer download={networkDownload} upload={networkUpload} />
+            <GameStatus 
+              status={emergencyActive ? "e-stop" : (robots.some(r => !r.disabled && r.status === "connected") ? "active" : "standby")}
+              robotCount={robots.length}
+              activeRobots={robots.filter(r => !r.disabled && r.status === "connected").length}
+            />
           </div>
 
-          {/* Terminal Monitor */}
+          {/* Terminal Monitor with Service Log tabs */}
           <div className="flex-1 min-h-0">
-            <TerminalMonitor lines={terminalLines} />
+            <MonitorTabs 
+              terminalLines={terminalLines}
+              logs={logs}
+              onClearLogs={handleClearLogs}
+            />
           </div>
         </div>
 
         {/* Right Column */}
         <div className="col-span-3 flex flex-col gap-6 h-[calc(100vh-180px)] min-h-0">
           {/* Control Panel */}
-          <div className="shrink-0">
-            <ControlPanel onEmergencyStop={handleEmergencyStop} emergencyActive={emergencyActive} />
-          </div>
-
-          {/* Service Log */}
           <div className="flex-1 min-h-0">
-            <ServiceLog logs={logs} onClear={handleClearLogs} />
+            <ControlPanel onEmergencyStop={handleEmergencyStop} emergencyActive={emergencyActive} />
           </div>
         </div>
       </div>

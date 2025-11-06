@@ -237,10 +237,11 @@ class ApiServer {
 
         // Get network statistics
         this.app.get('/api/network/stats', (req, res) => {
+            const stats = this.networkManager.getNetworkStats();
             res.json({
                 timestamp: Date.now(),
-                latency: 10, // Placeholder
-                bandwidth: 100, // Placeholder
+                downloadSpeed: stats.downloadSpeed,
+                uploadSpeed: stats.uploadSpeed,
                 activeConnections: this.robotManager.getConnectedRobots().length
             });
         });

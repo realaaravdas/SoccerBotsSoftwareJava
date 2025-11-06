@@ -27,8 +27,8 @@ export interface Controller {
 
 export interface NetworkStats {
   timestamp: number;
-  latency: number;
-  bandwidth: number;
+  downloadSpeed: number;
+  uploadSpeed: number;
   activeConnections: number;
 }
 
