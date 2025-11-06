@@ -5,6 +5,7 @@ import { NetworkAnalysis } from "./components/NetworkAnalysis";
 import { ControlPanel } from "./components/ControlPanel";
 import { ServiceLog } from "./components/ServiceLog";
 import { TerminalMonitor } from "./components/TerminalMonitor";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "./components/ui/resizable";
 import { Activity } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import { apiService, Robot, Controller, LogEntry } from "./services/api";
@@ -417,6 +418,18 @@ export default function App() {
     }
   };
 
+  const handleHideController = async (controllerId: string) => {
+    try {
+      await apiService.hideController(controllerId);
+      toast.info("Controller hidden");
+      addTerminalLine(`$ Controller hidden (will reappear on refresh)`);
+      await fetchControllers();
+    } catch (error) {
+      console.error("[App] Failed to hide controller:", error);
+      toast.error("Failed to hide controller");
+    }
+  };
+
   const handleRefreshControllers = async () => {
     try {
       toast.info("Scanning for controllers...");
@@ -462,33 +475,37 @@ export default function App() {
       {/* Main Grid */}
       <div className="grid grid-cols-12 gap-6">
         {/* Left Column - Robots & Controllers */}
-        <div className="col-span-3 h-[calc(100vh-180px)] min-h-0 flex flex-col gap-6">
-          <div className="flex-1 min-h-0">
-            <ConnectionPanel
-              robots={robots}
-              controllers={controllers}
-              selectedRobots={selectedRobots}
-              onConnect={handleConnect}
-              onDisconnect={handleDisconnect}
-              onRefresh={handleRefresh}
-              onDisable={handleDisable}
-              onToggleSelection={handleToggleRobotSelection}
-            />
-          </div>
-          <div className="h-64 min-h-0">
-            <ControllersPanel
-              controllers={controllers}
-              robots={robots.map((r) => ({ id: r.id, name: r.name }))}
-              onPair={handlePairController}
-              onUnpair={handleUnpairController}
-              onEnable={handleEnableController}
-              onDisable={handleDisableController}
-              onRefresh={handleRefreshControllers}
-              pairingControllerId={pairingControllerId}
-              onStartPairing={handleStartPairing}
-              onCancelPairing={handleCancelPairing}
-            />
-          </div>
+        <div className="col-span-3 h-[calc(100vh-180px)] min-h-0">
+          <ResizablePanelGroup direction="vertical" className="gap-2">
+            <ResizablePanel defaultSize={60} minSize={30}>
+              <ConnectionPanel
+                robots={robots}
+                controllers={controllers}
+                selectedRobots={selectedRobots}
+                onConnect={handleConnect}
+                onDisconnect={handleDisconnect}
+                onRefresh={handleRefresh}
+                onDisable={handleDisable}
+                onToggleSelection={handleToggleRobotSelection}
+              />
+            </ResizablePanel>
+            <ResizableHandle withHandle className="bg-white/10 hover:bg-cyan-500/30 transition-colors" />
+            <ResizablePanel defaultSize={40} minSize={20}>
+              <ControllersPanel
+                controllers={controllers}
+                robots={robots.map((r) => ({ id: r.id, name: r.name }))}
+                onPair={handlePairController}
+                onUnpair={handleUnpairController}
+                onEnable={handleEnableController}
+                onDisable={handleDisableController}
+                onHide={handleHideController}
+                onRefresh={handleRefreshControllers}
+                pairingControllerId={pairingControllerId}
+                onStartPairing={handleStartPairing}
+                onCancelPairing={handleCancelPairing}
+              />
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
 
         {/* Center Column */}

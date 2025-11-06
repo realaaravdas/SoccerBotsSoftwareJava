@@ -301,6 +301,18 @@ class ApiService {
     });
   }
 
+  async hideController(controllerId: string): Promise<void> {
+    await fetch(`${API_BASE_URL}/api/controllers/${controllerId}/hide`, {
+      method: 'POST'
+    });
+  }
+
+  async unhideController(controllerId: string): Promise<void> {
+    await fetch(`${API_BASE_URL}/api/controllers/${controllerId}/unhide`, {
+      method: 'POST'
+    });
+  }
+
   async refreshControllers(): Promise<void> {
     await fetch(`${API_BASE_URL}/api/controllers/refresh`, {
       method: 'POST'

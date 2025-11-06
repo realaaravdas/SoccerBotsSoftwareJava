@@ -178,9 +178,24 @@ class ApiServer {
             res.json({ success: true });
         });
 
+        // Hide controller
+        this.app.post('/api/controllers/:controllerId/hide', (req, res) => {
+            this.controllerManager.hideController(req.params.controllerId);
+            this.broadcastUpdate('controllers_updated', {});
+            res.json({ success: true });
+        });
+
+        // Unhide controller
+        this.app.post('/api/controllers/:controllerId/unhide', (req, res) => {
+            this.controllerManager.unhideController(req.params.controllerId);
+            this.broadcastUpdate('controllers_updated', {});
+            res.json({ success: true });
+        });
+
         // Refresh controllers
         this.app.post('/api/controllers/refresh', (req, res) => {
             this.controllerManager.refreshControllers();
+            this.broadcastUpdate('controllers_updated', {});
             res.json({ success: true });
         });
 
