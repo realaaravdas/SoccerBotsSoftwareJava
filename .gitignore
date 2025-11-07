@@ -71,6 +71,9 @@ config.properties
 # Test files
 test-results/
 coverage/
+test_*.js
+simulate_*.js
+trigger_*.js
 
 # Node.js / Electron / React
 node_modules/
