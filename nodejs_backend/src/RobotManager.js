@@ -6,7 +6,7 @@ const Robot = require('./Robot');
 const NetworkManager = require('./NetworkManager');
 
 class RobotManager {
-    static ROBOT_TIMEOUT_SECONDS = 10.0; // Mark robot as disconnected after 10 seconds
+    static ROBOT_TIMEOUT_SECONDS = 60.0; // Mark robot as disconnected after 60 seconds (matches Python behavior of no timeout)
     static DISCOVERY_PORT = NetworkManager.DISCOVERY_PORT; // Import from NetworkManager
 
     constructor(networkManager, apiServer = null) {
@@ -188,45 +188,16 @@ class RobotManager {
     _timeoutCheckLoop() {
         try {
             const currentTime = Date.now();
-            const disconnectedRobots = [];
             const robotsToRemove = [];
 
-            // Check connected robots for timeout
-            for (const [robotId, robot] of this.connectedRobots.entries()) {
-                const timeSinceSeen = (currentTime - robot.lastSeenTime) / 1000;
-                if (timeSinceSeen > RobotManager.ROBOT_TIMEOUT_SECONDS) {
-                    console.warn(`[RobotManager] Robot ${robotId} timed out (no ping for ${timeSinceSeen.toFixed(1)}s)`);
-                    // Broadcast receiving: false before removing
-                    if (this.apiServer) {
-                        this.apiServer.broadcastRobotReceivingCommand(robotId, false);
-                    }
-                    // Remove from connected list
-                    this.connectedRobots.delete(robotId);
-                    disconnectedRobots.push(robotId);
-                    robotsToRemove.push(robotId);
-                }
-            }
-
-            // Also remove from discovered list - robots should completely disappear after timeout
+            // Only remove from discovered list after very long timeout (for truly offline robots)
+            // Connected robots are never auto-disconnected (matches Python behavior)
             for (const [robotId, robot] of this.discoveredRobots.entries()) {
                 const timeSinceSeen = (currentTime - robot.lastSeenTime) / 1000;
                 if (timeSinceSeen > RobotManager.ROBOT_TIMEOUT_SECONDS) {
                     console.log(`[RobotManager] Removing stale robot ${robotId} from discovered list (offline for ${timeSinceSeen.toFixed(1)}s)`);
                     this.discoveredRobots.delete(robotId);
-                    if (!robotsToRemove.includes(robotId)) {
-                        robotsToRemove.push(robotId);
-                    }
-                }
-            }
-
-            // Call disconnect callbacks
-            for (const robotId of disconnectedRobots) {
-                for (const callback of this.disconnectCallbacks) {
-                    try {
-                        callback(robotId);
-                    } catch (error) {
-                        console.error(`[RobotManager] Error in disconnect callback: ${error.message}`);
-                    }
+                    robotsToRemove.push(robotId);
                 }
             }
         } catch (error) {

@@ -98,3 +98,4 @@ env/
 
 # Windows null file
 nul
+_codeql_detected_source_root
