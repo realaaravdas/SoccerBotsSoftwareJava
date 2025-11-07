@@ -22,6 +22,10 @@ class ControllerManager {
         
         // Store for external gamepad state (will be updated from Electron renderer)
         this.externalGamepadStates = new Map();
+        
+        // Track controller numbers by type for display purposes
+        this.controllerTypeCounters = new Map(); // type -> next number to assign
+        this.controllerNumbers = new Map(); // controllerId -> number
 
         console.log('[ControllerManager] Controller Manager initialized');
         this._startInputPolling();
@@ -38,14 +42,20 @@ class ControllerManager {
         // If controller is not registered yet, register it
         if (!this.connectedControllers.has(controllerId)) {
             const type = this._identifyControllerType(gamepadData.id || 'Unknown');
+            
+            // Assign a number to this controller based on its type
+            const controllerNumber = this._assignControllerNumber(type);
+            this.controllerNumbers.set(controllerId, controllerNumber);
+            
             const gameController = new GameController(
                 controllerId,
                 type,
-                gamepadData.id || `Controller ${controllerId}`
+                gamepadData.id || `Controller ${controllerId}`,
+                controllerNumber
             );
             this.connectedControllers.set(controllerId, gameController);
             this.controllerEnabled.set(controllerId, true);
-            console.log(`[ControllerManager] Detected new controller: ${gamepadData.id} (${type})`);
+            console.log(`[ControllerManager] Detected new controller: ${gamepadData.id} (${type} #${controllerNumber})`);
         }
     }
 
@@ -56,10 +66,39 @@ class ControllerManager {
         this.externalGamepadStates.delete(controllerId);
         if (this.connectedControllers.has(controllerId)) {
             console.log(`[ControllerManager] Controller disconnected: ${controllerId}`);
+            const controller = this.connectedControllers.get(controllerId);
+            
+            // Clean up the number assignment for this controller type
+            this._releaseControllerNumber(controller.type, this.controllerNumbers.get(controllerId));
+            
             this.connectedControllers.delete(controllerId);
             this.controllerRobotPairings.delete(controllerId);
             this.controllerEnabled.delete(controllerId);
+            this.controllerNumbers.delete(controllerId);
         }
+    }
+
+    /**
+     * Assign a unique number to a controller of a specific type
+     */
+    _assignControllerNumber(type) {
+        if (!this.controllerTypeCounters.has(type)) {
+            this.controllerTypeCounters.set(type, 1);
+        }
+        const number = this.controllerTypeCounters.get(type);
+        this.controllerTypeCounters.set(type, number + 1);
+        return number;
+    }
+
+    /**
+     * Release a controller number when a controller disconnects
+     * Note: This is a simple incrementing counter, not recycled to avoid confusion
+     * TODO: If future recycling logic is needed, implement here
+     */
+    _releaseControllerNumber(type, number) {
+        // We don't recycle numbers to avoid user confusion
+        // If controller #1 disconnects and a new one connects, it becomes #3 (not #1 again)
+        // This makes it clear which physical controller is which throughout a session
     }
 
     _identifyControllerType(name) {

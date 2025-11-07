@@ -86,10 +86,11 @@ class ControllerInput {
 }
 
 class GameController {
-    constructor(id, type, name) {
+    constructor(id, type, name, number = 1) {
         this.id = id;
         this.type = type;
         this.name = name;
+        this.number = number;
         this.connected = true;
         this.pairedRobotId = null;
         this.enabled = true;
@@ -105,6 +106,7 @@ class GameController {
             id: this.id,
             name: this.name,
             type: this.type,
+            number: this.number,
             connected: this.connected,
             pairedRobotId: this.pairedRobotId,
             enabled: this.enabled
