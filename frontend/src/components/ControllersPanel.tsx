@@ -10,6 +10,7 @@ interface Controller {
   pairedRobotId?: string;
   enabled?: boolean;
   type?: string;
+  number?: number;
 }
 
 interface Robot {
@@ -62,6 +63,13 @@ export function ControllersPanel({
     }
   };
 
+  const getControllerDisplayName = (controller: Controller) => {
+    if (controller.number !== undefined && controller.number > 0) {
+      return `${controller.type || "Controller"} #${controller.number}`;
+    }
+    return controller.name;
+  };
+
   return (
     <div className="h-full flex flex-col backdrop-blur-md bg-black/30 border border-white/10 rounded-lg p-4 overflow-hidden">
       <div className="flex items-center justify-between mb-4 shrink-0">
@@ -106,7 +114,7 @@ export function ControllersPanel({
                       <Gamepad2 className="h-4 w-4 text-gray-400" />
                     )}
                     <span className="text-sm text-white truncate max-w-[120px]">
-                      {controller.name}
+                      {getControllerDisplayName(controller)}
                     </span>
                     {controller.pairedRobotId && controller.enabled !== false && (
                       <Circle className="h-2 w-2 text-cyan-400 fill-cyan-400 animate-pulse" />

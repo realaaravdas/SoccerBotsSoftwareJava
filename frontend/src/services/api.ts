@@ -23,6 +23,7 @@ export interface Controller {
   pairedRobotId?: string;
   enabled?: boolean;
   type?: string; // "ps4", "ps5", "xbox", etc.
+  number?: number; // Controller number for distinguishing multiple of same type
 }
 
 export interface NetworkStats {

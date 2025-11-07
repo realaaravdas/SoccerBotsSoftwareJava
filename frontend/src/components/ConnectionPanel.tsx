@@ -7,6 +7,8 @@ import { Checkbox } from "./ui/checkbox";
 interface Controller {
   id: string;
   name: string;
+  type?: string;
+  number?: number;
 }
 
 interface Robot {
@@ -35,7 +37,13 @@ export function ConnectionPanel({ robots, controllers = [], selectedRobots, onCo
   const getControllerName = (controllerId?: string) => {
     if (!controllerId) return null;
     const controller = controllers.find(c => c.id === controllerId);
-    return controller ? controller.name : controllerId;
+    if (!controller) return controllerId;
+    
+    // Format name with number if available
+    if (controller.number !== undefined && controller.number > 0) {
+      return `${controller.type || "Controller"} #${controller.number}`;
+    }
+    return controller.name;
   };
 
   return (
