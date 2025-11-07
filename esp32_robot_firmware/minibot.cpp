@@ -83,7 +83,7 @@ void Minibot::updateController() {
   String packetStr = String(incomingPacket);
 
   // --- respond to PC discovery ping ---
-  if (packetStr == "ping") {
+  if (packetStr == "ping" && !connected) {
     String reply = "pong:" + String(robotId);
     udp.beginPacket(udp.remoteIP(), udp.remotePort());
     udp.write((const uint8_t*)reply.c_str(), reply.length());
