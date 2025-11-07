@@ -86,6 +86,10 @@ class ControllerInput {
 }
 
 class GameController {
+    // Constants for activity detection
+    static ACTIVITY_TIMEOUT_MS = 500; // Clear activity flag after 500ms of inactivity
+    static INPUT_DEADZONE = 0.1; // Ignore small movements below this threshold
+
     constructor(id, type, name, number = 1) {
         this.id = id;
         this.type = type;
@@ -111,7 +115,7 @@ class GameController {
     }
 
     _hasAnyInput(inputData) {
-        const deadzone = 0.1;
+        const deadzone = GameController.INPUT_DEADZONE;
         
         // Check stick movements
         if (Math.abs(inputData.leftStickX) > deadzone ||
@@ -135,8 +139,8 @@ class GameController {
     }
 
     clearActivityIfStale() {
-        // Clear activity flag if no input for 500ms
-        if (this.hasActivity && (Date.now() - this.lastActivityTime) > 500) {
+        // Clear activity flag if no input for the timeout period
+        if (this.hasActivity && (Date.now() - this.lastActivityTime) > GameController.ACTIVITY_TIMEOUT_MS) {
             this.hasActivity = false;
         }
     }
