@@ -66,7 +66,8 @@ class NetworkManager {
 
     /**
      * Send binary command data to ESP32 robot.
-     * Format: robotName(16 bytes) + axes(6 bytes) + buttons(2 bytes) = 24 bytes total
+     * Format: 6 axes bytes + 2 button bytes = 8 bytes total
+     * This matches the ESP32 firmware expectation in minibot.cpp
      */
     sendRobotCommand(robotName, targetIp, leftX, leftY, rightX, rightY, cross = false, circle = false, square = false, triangle = false) {
         if (!this.udpSocket) {
@@ -75,23 +76,19 @@ class NetworkManager {
         }
 
         try {
-            // Create 24-byte packet
-            const packet = Buffer.alloc(24);
-
-            // Robot name (16 bytes, null-padded)
-            const nameBytes = Buffer.from(robotName, 'utf-8').slice(0, 16);
-            nameBytes.copy(packet, 0);
+            // Create 8-byte packet to match ESP32 firmware
+            const packet = Buffer.alloc(8);
 
             // Helper function to clamp values to 0-255 range
             const clampToByte = (value) => Math.max(0, Math.min(255, value));
 
             // Axes data (6 bytes) - values 0-255
-            packet[16] = clampToByte(leftX);
-            packet[17] = clampToByte(leftY);
-            packet[18] = clampToByte(rightX);
-            packet[19] = clampToByte(rightY);
-            packet[20] = 125; // unused axis
-            packet[21] = 125; // unused axis
+            packet[0] = clampToByte(leftX);
+            packet[1] = clampToByte(leftY);
+            packet[2] = clampToByte(rightX);
+            packet[3] = clampToByte(rightY);
+            packet[4] = 127; // unused axis (fifth axis)
+            packet[5] = 127; // unused axis (sixth axis)
 
             // Button data (2 bytes)
             let button1 = 0;
@@ -100,8 +97,8 @@ class NetworkManager {
             if (square) button1 |= 0x04;
             if (triangle) button1 |= 0x08;
 
-            packet[22] = button1;
-            packet[23] = 0; // unused buttons
+            packet[6] = button1;
+            packet[7] = 0; // unused buttons
 
             // Send UDP packet
             this.udpSocket.send(packet, NetworkManager.ESP32_UDP_PORT, targetIp, (err) => {
@@ -141,6 +138,31 @@ class NetworkManager {
     }
 
     /**
+     * Send discovery ping to broadcast address
+     * ESP32 responds with "pong:<robotName>"
+     */
+    sendDiscoveryPing() {
+        if (!this.udpSocket) {
+            console.error('[NetworkManager] UDP socket not initialized');
+            return;
+        }
+
+        try {
+            const message = "ping";
+            const data = Buffer.from(message, 'utf-8');
+
+            // Send to broadcast address on ESP32_UDP_PORT
+            this.udpSocket.send(data, NetworkManager.ESP32_UDP_PORT, '255.255.255.255', (err) => {
+                if (err) {
+                    console.error(`[NetworkManager] Failed to send discovery ping: ${err.message}`);
+                }
+            });
+        } catch (error) {
+            console.error(`[NetworkManager] Failed to send discovery ping: ${error.message}`);
+        }
+    }
+
+    /**
      * Broadcast emergency stop to all robots on discovery port
      */
     broadcastEmergencyStop(activate = true) {
@@ -167,15 +189,16 @@ class NetworkManager {
     }
 
     /**
-     * Register callback for discovery messages
+     * Register callback for discovery messages on UDP socket (not discovery socket)
+     * ESP32 responds to "ping" with "pong:<robotName>" on port 2367
      */
     onDiscoveryMessage(callback) {
-        if (!this.discoverySocket) {
-            console.error('[NetworkManager] Discovery socket not initialized');
+        if (!this.udpSocket) {
+            console.error('[NetworkManager] UDP socket not initialized');
             return;
         }
 
-        this.discoverySocket.on('message', (msg, rinfo) => {
+        this.udpSocket.on('message', (msg, rinfo) => {
             try {
                 const message = msg.toString('utf-8');
                 callback(message, rinfo);
