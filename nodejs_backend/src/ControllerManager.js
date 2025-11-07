@@ -93,6 +93,7 @@ class ControllerManager {
     /**
      * Release a controller number when a controller disconnects
      * Note: This is a simple incrementing counter, not recycled to avoid confusion
+     * TODO: If future recycling logic is needed, implement here
      */
     _releaseControllerNumber(type, number) {
         // We don't recycle numbers to avoid user confusion

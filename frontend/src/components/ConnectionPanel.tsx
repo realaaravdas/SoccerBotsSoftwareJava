@@ -41,7 +41,9 @@ export function ConnectionPanel({ robots, controllers = [], selectedRobots, onCo
     
     // Format name with number if available
     if (controller.number !== undefined && controller.number > 0) {
-      return `${controller.type || "Controller"} #${controller.number}`;
+      // Use the type from backend (PlayStation, Xbox, Nintendo, Generic)
+      const displayType = controller.type || "Controller";
+      return `${displayType} #${controller.number}`;
     }
     return controller.name;
   };

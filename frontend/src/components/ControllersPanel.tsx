@@ -52,20 +52,22 @@ export function ControllersPanel({
 
   const getControllerIcon = (type?: string) => {
     switch (type) {
-      case "ps5":
-        return "🎮"; // PS5 DualSense
-      case "ps4":
-        return "🕹️"; // PS4 DualShock
-      case "xbox":
-        return "🎯"; // Xbox
+      case "PlayStation":
+        return "🎮"; // PlayStation controllers
+      case "Xbox":
+        return "🎯"; // Xbox controllers
+      case "Nintendo":
+        return "🕹️"; // Nintendo controllers
       default:
-        return "🎮";
+        return "🎮"; // Generic gamepad
     }
   };
 
   const getControllerDisplayName = (controller: Controller) => {
     if (controller.number !== undefined && controller.number > 0) {
-      return `${controller.type || "Controller"} #${controller.number}`;
+      // Use the type from backend (PlayStation, Xbox, Nintendo, Generic)
+      const displayType = controller.type || "Controller";
+      return `${displayType} #${controller.number}`;
     }
     return controller.name;
   };
