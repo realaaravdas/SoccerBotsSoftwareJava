@@ -7,8 +7,8 @@
 const { ControllerInput, GameController } = require('./ControllerInput');
 
 class ControllerManager {
-    // Polling interval constant
-    static POLLING_INTERVAL_MS = 16; // ~60Hz
+    // Polling interval constant - matches Python implementation (50ms)
+    static POLLING_INTERVAL_MS = 50; // 20Hz
 
     constructor(robotManager) {
         this.robotManager = robotManager;
@@ -110,19 +110,16 @@ class ControllerManager {
                 gameController.updateInput(inputData);
 
                 // Send to paired robot if not in emergency stop
+                // Always send commands continuously like the Python implementation
                 const pairedRobotId = this.controllerRobotPairings.get(controllerId);
                 if (pairedRobotId && !this.emergencyStopActive) {
-                    if (inputData.hasMovement()) {
-                        this.robotManager.sendMovementCommand(
-                            pairedRobotId,
-                            inputData.getLeftStickX(),
-                            inputData.getLeftStickY(),
-                            inputData.getRightStickX(),
-                            inputData.getRightStickY()
-                        );
-                    } else if (inputData.isStopCommand()) {
-                        this.robotManager.sendStopCommand(pairedRobotId);
-                    }
+                    this.robotManager.sendMovementCommand(
+                        pairedRobotId,
+                        inputData.getLeftStickX(),
+                        inputData.getLeftStickY(),
+                        inputData.getRightStickX(),
+                        inputData.getRightStickY()
+                    );
                 }
             } catch (error) {
                 console.error(`[ControllerManager] Error polling controller ${controllerId}: ${error.message}`);
