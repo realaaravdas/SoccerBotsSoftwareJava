@@ -19,6 +19,7 @@ class RobotManager {
         this.running = false;
         this.discoveryInterval = null;
         this.timeoutInterval = null;
+        this.gameStatusInterval = null;
         this.disconnectCallbacks = [];
 
         console.log('[RobotManager] ESP32 Robot Manager initialized with discovery protocol');
@@ -36,44 +37,51 @@ class RobotManager {
 
         this.running = true;
 
-        // Listen for discovery messages
+        // Listen for discovery messages (pong responses)
         this.networkManager.onDiscoveryMessage((message, rinfo) => {
-            this._handleDiscoveryPing(message, rinfo);
+            this._handleDiscoveryResponse(message, rinfo);
         });
+
+        // Send discovery pings periodically
+        this.discoveryInterval = setInterval(() => {
+            this.networkManager.sendDiscoveryPing();
+        }, 50); // Send ping every 50ms like the Python code
 
         // Start timeout check loop
         this.timeoutInterval = setInterval(() => {
             this._timeoutCheckLoop();
         }, 2000); // Check every 2 seconds
 
-        console.log(`[RobotManager] Discovery service started on port ${RobotManager.DISCOVERY_PORT}`);
+        // Start game status broadcast loop
+        this.gameStatusInterval = setInterval(() => {
+            this._broadcastGameStatus();
+        }, 1000); // Broadcast every second like Python code
+
+        console.log(`[RobotManager] Discovery service started - sending pings on port ${NetworkManager.ESP32_UDP_PORT}`);
     }
 
-    _handleDiscoveryPing(message, rinfo) {
-        // Handle discovery ping from robot: "DISCOVER:<robotId>:<IP>"
-        if (message.startsWith("DISCOVER:")) {
-            const parts = message.split(':');
-            if (parts.length >= 3) {
-                const robotId = parts[1];
-                const ipAddress = parts[2];
+    _handleDiscoveryResponse(message, rinfo) {
+        // Handle discovery pong from robot: "pong:<robotId>"
+        if (message.startsWith("pong:")) {
+            const robotId = message.substring(5).trim();
+            const ipAddress = rinfo.address;
 
-                // Check if robot is in connected list
-                let robot = this.connectedRobots.get(robotId);
-                if (robot) {
-                    // Update connected robot's last seen time
+            // Check if robot is in connected list
+            let robot = this.connectedRobots.get(robotId);
+            if (robot) {
+                // Update connected robot's last seen time
+                robot.setIpAddress(ipAddress);
+                robot.updateLastSeenTime();
+            } else {
+                // Add/update discovered robot
+                robot = this.discoveredRobots.get(robotId);
+                if (!robot) {
+                    robot = new Robot(robotId, robotId, ipAddress, "discovered");
+                    this.discoveredRobots.set(robotId, robot);
+                    console.log(`[RobotManager] Discovered new robot: ${robotId} at ${ipAddress}`);
+                } else {
                     robot.setIpAddress(ipAddress);
                     robot.updateLastSeenTime();
-                } else {
-                    // Add/update discovered robot
-                    robot = this.discoveredRobots.get(robotId);
-                    if (!robot) {
-                        robot = new Robot(robotId, robotId, ipAddress, "discovered");
-                        this.discoveredRobots.set(robotId, robot);
-                        console.log(`[RobotManager] Discovered new robot: ${robotId} at ${ipAddress}`);
-                    } else {
-                        robot.setIpAddress(ipAddress);
-                        robot.updateLastSeenTime();
-                    }
                 }
             }
         }
@@ -103,10 +111,8 @@ class RobotManager {
             this.connectedRobots.set(robotId, robot);
             console.log(`[RobotManager] Connected to robot: ${robotId}`);
 
-            // Send teleop status if match is running
-            if (this.currentGameState === "teleop") {
-                this.networkManager.sendGameStatus(robot.name, robot.ipAddress, "teleop");
-            }
+            // Send current game status
+            this.networkManager.sendGameStatus(robot.name, robot.ipAddress, this.currentGameState);
 
             return robot;
         }
@@ -228,6 +234,13 @@ class RobotManager {
         }
     }
 
+    _broadcastGameStatus() {
+        // Send game status to all connected robots periodically
+        for (const robot of this.connectedRobots.values()) {
+            this.networkManager.sendGameStatus(robot.name, robot.ipAddress, this.currentGameState);
+        }
+    }
+
     stopTeleop() {
         this.currentGameState = "standby";
         console.log('[RobotManager] Teleop mode stopped');
@@ -261,8 +274,14 @@ class RobotManager {
 
     shutdown() {
         this.running = false;
+        if (this.discoveryInterval) {
+            clearInterval(this.discoveryInterval);
+        }
         if (this.timeoutInterval) {
             clearInterval(this.timeoutInterval);
+        }
+        if (this.gameStatusInterval) {
+            clearInterval(this.gameStatusInterval);
         }
 
         // Send stop commands to all robots
