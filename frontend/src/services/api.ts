@@ -24,6 +24,7 @@ export interface Controller {
   enabled?: boolean;
   type?: string; // "ps4", "ps5", "xbox", etc.
   number?: number; // Controller number for distinguishing multiple of same type
+  hasActivity?: boolean; // Whether controller is actively receiving input
 }
 
 export interface NetworkStats {

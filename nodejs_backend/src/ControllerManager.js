@@ -11,8 +11,9 @@ class ControllerManager {
     // 50ms = 20Hz (1000ms / 50ms = 20Hz)
     static POLLING_INTERVAL_MS = 50;
 
-    constructor(robotManager) {
+    constructor(robotManager, apiServer = null) {
         this.robotManager = robotManager;
+        this.apiServer = apiServer;
         this.connectedControllers = new Map();
         this.controllerRobotPairings = new Map();
         this.controllerEnabled = new Map();
@@ -29,6 +30,10 @@ class ControllerManager {
 
         console.log('[ControllerManager] Controller Manager initialized');
         this._startInputPolling();
+    }
+
+    setApiServer(apiServer) {
+        this.apiServer = apiServer;
     }
 
     /**
@@ -147,7 +152,23 @@ class ControllerManager {
 
                 // Read controller input
                 const inputData = this._readControllerInput(gamepadData);
+                
+                // Track previous activity state
+                const hadActivity = gameController.hasActivity;
+                
+                // Update input and activity
                 gameController.updateInput(inputData);
+                
+                // Clear stale activity flags
+                gameController.clearActivityIfStale();
+                
+                // If activity state changed, broadcast update
+                if (hadActivity !== gameController.hasActivity && this.apiServer) {
+                    this.apiServer.broadcastUpdate('controller_activity', {
+                        controllerId: controllerId,
+                        hasActivity: gameController.hasActivity
+                    });
+                }
 
                 // Send to paired robot if not in emergency stop
                 // Always send commands continuously like the Python implementation

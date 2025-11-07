@@ -26,6 +26,9 @@ try {
 
     // Create API server
     const apiServer = new ApiServer(robotManager, controllerManager, networkManager);
+    
+    // Link API server to controller manager for activity broadcasts
+    controllerManager.setApiServer(apiServer);
 
     // Setup shutdown handler
     const shutdownHandler = () => {

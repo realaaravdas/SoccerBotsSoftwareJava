@@ -104,6 +104,8 @@ export function ControllersPanel({
                 className={`backdrop-blur-sm bg-white/5 border rounded-md p-3 hover:bg-white/10 transition-all ${
                   controller.enabled === false
                     ? "opacity-50 border-gray-500/30"
+                    : controller.hasActivity
+                    ? "border-cyan-400 shadow-lg shadow-cyan-500/50 ring-2 ring-cyan-400/30"
                     : "border-white/10"
                 } ${pairingControllerId === controller.id ? "ring-2 ring-cyan-500/50" : ""}`}
               >
@@ -111,7 +113,7 @@ export function ControllersPanel({
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{getControllerIcon(controller.type)}</span>
                     {controller.connected ? (
-                      <Gamepad2 className="h-4 w-4 text-green-400" />
+                      <Gamepad2 className={`h-4 w-4 ${controller.hasActivity ? "text-cyan-400" : "text-green-400"}`} />
                     ) : (
                       <Gamepad2 className="h-4 w-4 text-gray-400" />
                     )}

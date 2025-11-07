@@ -95,10 +95,50 @@ class GameController {
         this.pairedRobotId = null;
         this.enabled = true;
         this.currentInput = new ControllerInput();
+        this.hasActivity = false;
+        this.lastActivityTime = 0;
     }
 
     updateInput(inputData) {
         this.currentInput = inputData;
+        
+        // Check if there's any meaningful input (movement or button press)
+        const hasInput = this._hasAnyInput(inputData);
+        if (hasInput) {
+            this.hasActivity = true;
+            this.lastActivityTime = Date.now();
+        }
+    }
+
+    _hasAnyInput(inputData) {
+        const deadzone = 0.1;
+        
+        // Check stick movements
+        if (Math.abs(inputData.leftStickX) > deadzone ||
+            Math.abs(inputData.leftStickY) > deadzone ||
+            Math.abs(inputData.rightStickX) > deadzone ||
+            Math.abs(inputData.rightStickY) > deadzone) {
+            return true;
+        }
+        
+        // Check triggers
+        if (inputData.leftTrigger > deadzone || inputData.rightTrigger > deadzone) {
+            return true;
+        }
+        
+        // Check buttons
+        if (inputData.buttons.some(button => button)) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    clearActivityIfStale() {
+        // Clear activity flag if no input for 500ms
+        if (this.hasActivity && (Date.now() - this.lastActivityTime) > 500) {
+            this.hasActivity = false;
+        }
     }
 
     toDict() {
@@ -109,7 +149,8 @@ class GameController {
             number: this.number,
             connected: this.connected,
             pairedRobotId: this.pairedRobotId,
-            enabled: this.enabled
+            enabled: this.enabled,
+            hasActivity: this.hasActivity
         };
     }
 }

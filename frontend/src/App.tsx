@@ -81,6 +81,17 @@ export default function App() {
       fetchControllers();
     });
 
+    const unsubControllerActivity = apiService.on("controller_activity", (data) => {
+      // Update controller activity state in real-time
+      setControllers((prevControllers) =>
+        prevControllers.map((controller) =>
+          controller.id === data.controllerId
+            ? { ...controller, hasActivity: data.hasActivity }
+            : controller
+        )
+      );
+    });
+
     const unsubEmergency = apiService.on("emergency_stop", (data) => {
       console.log("[WebSocket] Emergency stop:", data);
       setEmergencyActive(data.active);
@@ -111,6 +122,7 @@ export default function App() {
       unsubControllerEvent();
       unsubControllerUnpaired();
       unsubControllersUpdated();
+      unsubControllerActivity();
       unsubEmergency();
       unsubRobotReceiving();
     };
