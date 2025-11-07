@@ -11,6 +11,7 @@ class NetworkManager {
     static DISCOVERY_PORT = 12345;
     static ESP32_UDP_PORT = 2367;
     static EXPECTED_WIFI_NETWORK = "WATCHTOWER";
+    static BROADCAST_ADDRESS = "255.255.255.255";
 
     constructor() {
         this.udpSocket = null;
@@ -152,7 +153,7 @@ class NetworkManager {
             const data = Buffer.from(message, 'utf-8');
 
             // Send to broadcast address on ESP32_UDP_PORT
-            this.udpSocket.send(data, NetworkManager.ESP32_UDP_PORT, '255.255.255.255', (err) => {
+            this.udpSocket.send(data, NetworkManager.ESP32_UDP_PORT, NetworkManager.BROADCAST_ADDRESS, (err) => {
                 if (err) {
                     console.error(`[NetworkManager] Failed to send discovery ping: ${err.message}`);
                 }
@@ -176,7 +177,7 @@ class NetworkManager {
             const data = Buffer.from(message, 'utf-8');
 
             // Send to broadcast address on discovery port (always monitored by robots)
-            this.udpSocket.send(data, NetworkManager.DISCOVERY_PORT, '255.255.255.255', (err) => {
+            this.udpSocket.send(data, NetworkManager.DISCOVERY_PORT, NetworkManager.BROADCAST_ADDRESS, (err) => {
                 if (err) {
                     console.error(`[NetworkManager] Failed to broadcast emergency stop: ${err.message}`);
                 } else {

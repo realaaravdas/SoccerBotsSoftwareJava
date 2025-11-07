@@ -7,8 +7,9 @@
 const { ControllerInput, GameController } = require('./ControllerInput');
 
 class ControllerManager {
-    // Polling interval constant - matches Python implementation (50ms)
-    static POLLING_INTERVAL_MS = 50; // 20Hz
+    // Polling interval constant - matches Python implementation
+    // 50ms = 20Hz (1000ms / 50ms = 20Hz)
+    static POLLING_INTERVAL_MS = 50;
 
     constructor(robotManager) {
         this.robotManager = robotManager;
